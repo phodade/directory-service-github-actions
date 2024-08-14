@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Setup java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
@@ -22,7 +22,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
  
-      - name: Perform google formatter check
+      - name: Perform Google Formatter Check
         run: mvn com.spotify.fmt:fmt-maven-plugin:check
 
       - name: GitLeaks Scan
@@ -30,7 +30,7 @@ jobs:
         with:
           args: --path=.
 
-      - name: OSS scan
+      - name: OSS Scan
         run: mvn ossindex:audit
 
       - name: OWASP Scan
@@ -47,19 +47,18 @@ jobs:
           name: test-results
           path: target/surefire-reports/*.xml
 
-      - name: Build code and create docker image
+      - name: Build Code and Create Docker Image
         run: mvn clean install docker:build
+      
+      - name: Tag Docker Image
+        run: |
+          docker tag dnyanyog.org/directoryser:latest ${{ secrets.DOCKER_REGISTRY_USER }}/directory-service:latest
 
-      - name: Re tag the docker image
-        run: docker tag dnyanyog.org/directoryser:latest directory-service:latest
-
-      - name: Log in to GitHub Docker Registry
+      - name: Log in to Docker Registry
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_REGISTRY_USER }}
           password: ${{ secrets.DOCKER_REGISTRY_PAT }}    
           
-      - name: Push docker image
-        run: docker push ${{secrets.DOCKER_REGISTRY_USER }}/directory-service:latest 
-
-        
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_REGISTRY_USER }}/directory-service:latest 
